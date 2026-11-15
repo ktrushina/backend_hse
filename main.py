@@ -17,8 +17,12 @@ async def root() -> dict[str, str]:
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    """Expose invalid request data as HTTP 400, as required by the assignment."""
+    errors = [
+        {"loc": error["loc"], "msg": error["msg"], "type": error["type"]}
+        for error in exc.errors()
+    ]
+
     return JSONResponse(
         status_code=400,
-        content={"detail": "Invalid request data", "errors": exc.errors()},
+        content={"detail": "Invalid request data", "errors": errors},
     )

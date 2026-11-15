@@ -6,10 +6,10 @@ class PredictionRequest(BaseModel):
 
     model_config = ConfigDict(strict=True)
 
-    seller_id: int = Field(ge=0)
+    seller_id: int 
     is_verified_seller: bool
-    item_id: int = Field(ge=0)
+    item_id: int
     name: str
     description: str
-    category: int = Field(ge=0)
+    category: int 
     images_qty: int = Field(ge=0)

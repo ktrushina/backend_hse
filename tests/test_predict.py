@@ -96,3 +96,28 @@ def test_root_endpoint():
 
     assert response.status_code == 200
     assert response.json() == {"message": "Hello World"}
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        pytest.param(
+            '{"seller_id": 10, "is_verified_seller": false, '
+            '"item_id": 20, "name": "Chair", "description": "A chair", '
+            '"category": 3, "images_qty": 1e400}',
+            id="number-overflow",
+        ),
+        pytest.param('{"images_qty":', id="malformed-json"),
+    ],
+)
+def test_invalid_json_body_returns_400(body):
+    response = client.post(
+        "/predict",
+        content=body,
+        headers={"Content-Type": "application/json"},
+    )
+
+    assert response.status_code == 400
+    data = response.json()
+    assert data["detail"] == "Invalid request data"
+    assert data["errors"]
+    assert all(set(error) == {"loc", "msg", "type"} for error in data["errors"])
