@@ -1,9 +1,4 @@
-from schemas.predict import PredictionRequest
-
-
 class PredictionRepository:
-    """Naive prediction backend; replace this with a model or data store later."""
+    def get_min_images_for_unverified_seller(self) -> int:
+        return 1
 
-    def predict_violation(self, request: PredictionRequest) -> bool:
-        # Verified sellers are assumed safe. Other sellers need at least one image.
-        return not request.is_verified_seller and request.images_qty == 0
