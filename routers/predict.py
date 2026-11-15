@@ -19,5 +19,5 @@ async def predict(
     try:
         return service.predict(request)
     except Exception as exc:
-        # Do not expose internal exception details to API clients.
+        # do not expose internal exception details to API clients
         raise HTTPException(status_code=500, detail="Prediction failed") from exc
