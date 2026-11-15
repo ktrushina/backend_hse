@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PredictionRequest(BaseModel):
-    """Input fields required to assess an advertisement."""
+    """input fields required to assess an advertisement"""
 
     model_config = ConfigDict(strict=True)
 
