@@ -61,11 +61,18 @@ async def get_prices_with_timeout(shops: list[str], timeout: float = 1.0) -> lis
 
 
 async def get_prices_limited(shops: list[str], limit: int = 3) -> list[int]:
-    """Запросить цены одновременно, но не больше limit запросов в один момент.
+    """Запросить цены конкурентно, но не больше limit одновременно."""
 
-    Подсказка: asyncio.Semaphore(limit) и async with внутри вспомогательной функции.
-    """
-    raise NotImplementedError
+    semaphore = asyncio.Semaphore(limit)
+
+    async def fetch_with_limit(shop: str) -> int:
+        #ждем свободное место, если limit запросов уже выполняются
+        async with semaphore:
+            return await fetch_price(shop)
+
+    return await asyncio.gather(
+        *(fetch_with_limit(shop) for shop in shops)
+    )
 
 
 if __name__ == "__main__":
