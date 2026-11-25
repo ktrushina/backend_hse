@@ -98,35 +98,3 @@ def missing_ids():
 
     return asyncio.run(find_missing_ids())
 
-
-@pytest.fixture
-def missing_ids():
-    """Подобрать ID, которых точно нет в обеих таблицах"""
-
-    async def find_missing_ids():
-        conn = await asyncpg.connect(DATABASE_URL)
-
-        try:
-            while True:
-                candidate = uuid.uuid4().int % 2_000_000_000 + 1
-
-                user_exists = await conn.fetchval(
-                    "SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)",
-                    candidate,
-                )
-
-                item_exists = await conn.fetchval(
-                    "SELECT EXISTS(SELECT 1 FROM items WHERE id = $1)",
-                    candidate,
-                )
-
-                if not user_exists and not item_exists:
-                    return {
-                        "user_id": candidate,
-                        "item_id": candidate,
-                    }
-        finally:
-            await conn.close()
-
-    return asyncio.run(find_missing_ids())
-
