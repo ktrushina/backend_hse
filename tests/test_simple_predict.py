@@ -9,6 +9,9 @@ from main import app
 from repositories.database import DATABASE_URL
 from routers.predict import get_prediction_service
 
+from unittest.mock import AsyncMock
+from unittest.mock import patch
+
 
 client = TestClient(app)
 
@@ -76,14 +79,18 @@ def test_invalid_item_id(params):
     assert response.status_code == 400
 
 
-def test_item_not_found():
+def test_item_not_found(missing_ids):
     """Проверяем несуществующее объявление."""
+
     response = client.post(
         "/simple_predict",
-        params={"item_id": 2147483647},
+        params={"item_id": missing_ids["item_id"]},
     )
 
     assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Item not found"
+    }
 
 
 def test_prediction_error_returns_500(db_records):
@@ -109,3 +116,27 @@ def test_prediction_error_returns_500(db_records):
 
     assert response.status_code == 500
     assert response.json() == {"detail": "Prediction failed"}
+
+
+
+def test_database_connection_error():
+    """Если PostgreSQL недоступен, возвращаем HTTP 500"""
+
+    with patch(
+        "repositories.database.asyncpg.connect",
+        new_callable=AsyncMock,
+    ) as mock_connect:
+        mock_connect.side_effect = ConnectionError(
+            "Database is unavailable"
+        )
+
+        response = client.post(
+            "/simple_predict",
+            params={"item_id": 1},
+        )
+
+    assert response.status_code == 500
+    assert response.json() == {
+        "detail": "Prediction failed"
+    }
+

@@ -15,7 +15,7 @@ def run(coro):
 
 @pytest.fixture
 def db_records():
-    """Создаём тестовые записи и удаляем их после теста."""
+    """Создаём тестовые записи и удаляем их после теста"""
 
     user_id = uuid.uuid4().int % 1_000_000_000 + 100_000_000
     item_id = uuid.uuid4().int % 1_000_000_000 + 100_000_000
@@ -65,3 +65,68 @@ def db_records():
         yield {"user_id": user_id, "item_id": item_id}
     finally:
         run(cleanup())
+
+
+@pytest.fixture
+def missing_ids():
+    """Подобрать ID, которых точно нет в обеих таблицах"""
+
+    async def find_missing_ids():
+        conn = await asyncpg.connect(DATABASE_URL)
+
+        try:
+            while True:
+                candidate = uuid.uuid4().int % 2_000_000_000 + 1
+
+                user_exists = await conn.fetchval(
+                    "SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)",
+                    candidate,
+                )
+
+                item_exists = await conn.fetchval(
+                    "SELECT EXISTS(SELECT 1 FROM items WHERE id = $1)",
+                    candidate,
+                )
+
+                if not user_exists and not item_exists:
+                    return {
+                        "user_id": candidate,
+                        "item_id": candidate,
+                    }
+        finally:
+            await conn.close()
+
+    return asyncio.run(find_missing_ids())
+
+
+@pytest.fixture
+def missing_ids():
+    """Подобрать ID, которых точно нет в обеих таблицах"""
+
+    async def find_missing_ids():
+        conn = await asyncpg.connect(DATABASE_URL)
+
+        try:
+            while True:
+                candidate = uuid.uuid4().int % 2_000_000_000 + 1
+
+                user_exists = await conn.fetchval(
+                    "SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)",
+                    candidate,
+                )
+
+                item_exists = await conn.fetchval(
+                    "SELECT EXISTS(SELECT 1 FROM items WHERE id = $1)",
+                    candidate,
+                )
+
+                if not user_exists and not item_exists:
+                    return {
+                        "user_id": candidate,
+                        "item_id": candidate,
+                    }
+        finally:
+            await conn.close()
+
+    return asyncio.run(find_missing_ids())
+

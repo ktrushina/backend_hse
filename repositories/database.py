@@ -3,6 +3,7 @@ import os
 from collections.abc import AsyncIterator
 
 import asyncpg
+from fastapi import HTTPException
 
 
 DATABASE_URL = os.getenv(
@@ -12,12 +13,17 @@ DATABASE_URL = os.getenv(
 
 
 async def get_db_connection() -> AsyncIterator[asyncpg.Connection]:
-    """Открыть соединение с БД и закрыть его после запроса."""
+    """Открыть соединение с БД и закрыть его после запроса"""
 
-    conn = await asyncpg.connect(DATABASE_URL)
+    try:
+        conn = await asyncpg.connect(DATABASE_URL)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Prediction failed",
+        ) from exc
 
     try:
         yield conn
     finally:
         await conn.close()
-
