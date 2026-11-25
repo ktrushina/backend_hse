@@ -10,7 +10,18 @@ def get_prediction_service() -> PredictionService:
     return PredictionService()
 
 
-@router.post("/predict", response_model=bool)
+@router.post(
+    "/predict",
+    response_model=bool,
+    responses={
+        400: {
+            "description": "Некорректные входные данные",
+        },
+        500: {
+            "description": "Внутренняя ошибка предсказания",
+        },
+    },
+)
 async def predict(
     request: PredictionRequest,
     service: PredictionService = Depends(get_prediction_service),

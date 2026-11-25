@@ -11,7 +11,23 @@ from services.predict import PredictionService
 router = APIRouter()
 
 
-@router.post("/simple_predict", response_model=bool)
+
+@router.post(
+    "/simple_predict",
+    response_model=bool,
+    responses={
+        400: {
+            "description": "Некорректный идентификатор объявления",
+        },
+        404: {
+            "description": "Объявление не найдено",
+        },
+        500: {
+            "description": "Внутренняя ошибка сервиса",
+        },
+    },
+)
+
 async def simple_predict(
     item_id: int = Query(ge=0),
     service: PredictionService = Depends(get_prediction_service),
