@@ -3,9 +3,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from routers.predict import router as predict_router
+from routers.simple_predict import router as simple_predict_router
 
 app = FastAPI(title="Ad Moderation API")
 app.include_router(predict_router)
+app.include_router(simple_predict_router)
 
 
 @app.get("/")
